@@ -1,0 +1,10 @@
+{
+	"name": "jsutils/tmpl",
+	"type": "library",
+	"description": "Javascript Templating engine taken from underscore",
+	"keywords": ["module", "polyfills"],
+	"license": "MIT",
+	"require": {
+		"webmodules/foo": ">=0.1.0"
+	}
+}

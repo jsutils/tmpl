@@ -1,0 +1,7 @@
+{
+	"name" : "jsutils/tmpl",
+	"jsutils/tmpl": {
+		"js": ["jsutils.tmpl.js"],
+		"on" : ["webmodules/foo"]
+	}
+}

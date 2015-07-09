@@ -1,0 +1,27 @@
+{
+  "name": "jsonutils-tmpl",
+  "version": "0.0.1",
+  "main": "foo.js",
+  "description": "Javascript Templating engine taken from underscore",
+  "authors": [
+    "lalit.tanwar07@gmail.com"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jsonutils/tmpl.git"
+  },
+  "dependencies": {
+  	"webmodules-foo" : "latest"
+  },
+  "keywords": [
+    "polyfils"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
