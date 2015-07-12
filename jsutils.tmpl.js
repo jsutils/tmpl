@@ -1,20 +1,17 @@
 _define_("jsutils.tmpl", function(tmpl) {
 
 	"use strict";
-	// By default, Underscore uses ERB-style template delimiters, change the
-	// following template settings to use alternative delimiters.
-	// evaluate : /<%([\s\S]+?)%>/g,
-	// interpolate : /<%=([\s\S]+?)%>/g,
-	// escape : /<%-([\s\S]+?)%>/g
-	var _ = {
-		templateSettings : {
-			evaluate : /<!--\ ([\s\S]+?)\ -->/g,
-			interpolate : /{{([\s\S]+?)}}/g,
-			escape : /<!--\\([\s\S]+?)-->/g,
-			variable : 'data'
-		}
-	};
 
+	// List of HTML entities for escaping.
+	var escapeMap = {
+		'&' : '&amp;',
+		'<' : '&lt;',
+		'>' : '&gt;',
+		'"' : '&quot;',
+		"'" : '&#x27;',
+		'`' : '&#x60;'
+	};
+	
 	// When customizing `templateSettings`, if you don't want to define an
 	// interpolation, evaluation or escaping regex, we need one that is
 	// guaranteed not to match.
@@ -32,18 +29,63 @@ _define_("jsutils.tmpl", function(tmpl) {
 		'\u2029' : 'u2029'
 	};
 
-	var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g;
+	var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
+	var escapeChar = function(match) {
+		return '\\' + escapes[match];
+	};
 
+	// following template settings to use alternative delimiters.
+	// evaluate : /<%([\s\S]+?)%>/g,
+	// interpolate : /<%=([\s\S]+?)%>/g,
+	// escape : /<%-([\s\S]+?)%>/g
+	var _ = {
+		// Functions for escaping and unescaping strings to/from HTML
+		// interpolation.
+		escape : (function(map) {
+			var escaper = function(match) {
+				return map[match];
+			};
+			// Regexes for identifying a key that needs to be escaped
+			var source = '(?:' + Object.keys(map).join('|') + ')';
+			var testRegexp = RegExp(source);
+			var replaceRegexp = RegExp(source, 'g');
+			return function(string) {
+				string = string == null ? '' : '' + string;
+				return testRegexp.test(string) ? string.replace(replaceRegexp,
+						escaper) : string;
+			};
+		})(escapeMap),
+		templateSettings : {
+			evaluate : /<!--\ ([\s\S]+?)\ -->/g,
+			interpolate : /{{([\s\S]+?)}}/g,
+			escape : /<!--\\([\s\S]+?)-->/g,
+			variable : 'data'
+		},
+		__undescore_template_resolver_ : function(file_name, data) {
+			if (TEMPLATES[file_name]) {
+				return TEMPLATES[file_name](data);
+			} else if (file_name) {
+				return "NO TEMPLATE FOUND:" + file_name;
+			} else
+				return "";
+		}
+	};
+
+	tmpl.parse = function(template,data){
+		return this.compile(template)(data);
+	};
+	
 	// JavaScript micro-templating, similar to John Resig's implementation.
 	// Underscore templating handles arbitrary delimiters, preserves whitespace,
 	// and correctly escapes quotes within interpolated code.
-
-	tmpl.parse = function(text, data, settings) {
-		var render;
-		settings = $.extend({}, foo.template.settings, settings);
+	// NB: `oldSettings` only exists for backwards compatibility.
+	tmpl.compile = function(text, settings, oldSettings) {
+		if (!settings && oldSettings)
+			settings = oldSettings;
+		settings = mixin(mixin({}, settings), _.templateSettings);
 
 		// Combine delimiters into one regular expression via alternation.
-		var matcher = new RegExp([ (settings.escape || noMatch).source,
+		var matcher = RegExp([ (settings.escape || noMatch).source,
 				(settings.interpolate || noMatch).source,
 				(settings.evaluate || noMatch).source ].join('|')
 				+ '|$', 'g');
@@ -53,22 +95,20 @@ _define_("jsutils.tmpl", function(tmpl) {
 		var source = "__p+='";
 		text.replace(matcher, function(match, escape, interpolate, evaluate,
 				offset) {
-			source += text.slice(index, offset).replace(escaper,
-					function(match) {
-						return '\\' + escapes[match];
-					});
+			source += text.slice(index, offset).replace(escapeRegExp,
+					escapeChar);
+			index = offset + match.length;
 
 			if (escape) {
 				source += "'+\n((__t=(" + escape
 						+ "))==null?'':_.escape(__t))+\n'";
-			}
-			if (interpolate) {
+			} else if (interpolate) {
 				source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
-			}
-			if (evaluate) {
+			} else if (evaluate) {
 				source += "';\n" + evaluate + "\n__p+='";
 			}
-			index = offset + match.length;
+
+			// Adobe VMs need the match returned to produce the correct offset.
 			return match;
 		});
 		source += "';\n";
@@ -79,25 +119,23 @@ _define_("jsutils.tmpl", function(tmpl) {
 
 		source = "var __t,__p='',__j=Array.prototype.join,"
 				+ "print=function(){__p+=__j.call(arguments,'');};\n" + source
-				+ "return __p;\n";
+				+ 'return __p;\n';
 
+		var render;
 		try {
-			render = new Function(settings.variable || 'obj', '_', source);
+			render = new Function(settings.variable || 'obj', '_', '__',source);
 		} catch (e) {
 			e.source = source;
 			throw e;
 		}
 
-		if (data)
-			return render(data, _);
 		var template = function(data) {
-			return render.call(this, data, _);
+			return render.call(this, data, _, settings);
 		};
 
-		// Provide the compiled function source as a convenience for
-		// precompilation.
-		template.source = 'function(' + (settings.variable || 'obj') + '){\n'
-				+ source + '}';
+		// Provide the compiled source as a convenience for precompilation.
+		var argument = settings.variable || 'obj';
+		template.source = 'function(' + argument + '){\n' + source + '}';
 
 		return template;
 	};

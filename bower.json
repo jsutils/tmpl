@@ -8,7 +8,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/jsonutils/tmpl.git"
+    "url": "git://github.com/jsutils/tmpl.git"
   },
   "dependencies": {
   	"webmodules-foo" : "latest"
