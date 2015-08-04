@@ -38,7 +38,7 @@ _define_("jsutils.tmpl", function(tmpl) {
 	// evaluate : /<%([\s\S]+?)%>/g,
 	// interpolate : /<%=([\s\S]+?)%>/g,
 	// escape : /<%-([\s\S]+?)%>/g
-	var _ = {
+	var _tmpl = {
 		// Functions for escaping and unescaping strings to/from HTML
 		// interpolation.
 		escape : (function(map) {
@@ -82,7 +82,7 @@ _define_("jsutils.tmpl", function(tmpl) {
 	tmpl.compile = function(text, settings, oldSettings) {
 		if (!settings && oldSettings)
 			settings = oldSettings;
-		settings = mixin(mixin({}, settings), _.templateSettings);
+		settings = mixin(mixin({}, settings), _tmpl.templateSettings);
 
 		// Combine delimiters into one regular expression via alternation.
 		var matcher = RegExp([ (settings.escape || noMatch).source,
@@ -101,7 +101,7 @@ _define_("jsutils.tmpl", function(tmpl) {
 
 			if (escape) {
 				source += "'+\n((__t=(" + escape
-						+ "))==null?'':_.escape(__t))+\n'";
+						+ "))==null?'':_tmpl.escape(__t))+\n'";
 			} else if (interpolate) {
 				source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
 			} else if (evaluate) {
@@ -123,14 +123,14 @@ _define_("jsutils.tmpl", function(tmpl) {
 
 		var render;
 		try {
-			render = new Function(settings.variable || 'obj', '_', '__',source);
+			render = new Function(settings.variable || 'obj', '_tmpl', '__',source);
 		} catch (e) {
 			e.source = source;
 			throw e;
 		}
 
 		var template = function(data) {
-			return render.call(this, data, _, settings);
+			return render.call(this, data, _tmpl, settings);
 		};
 
 		// Provide the compiled source as a convenience for precompilation.
