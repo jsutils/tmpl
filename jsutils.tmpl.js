@@ -68,7 +68,28 @@ _define_("jsutils.tmpl", function(tmpl) {
 				return "NO TEMPLATE FOUND:" + file_name;
 			} else
 				return "";
+		},
+		_format_ : function(value,str){
+			var formatters = str.replace(/ /g,"").split("|");
+			for(var i in formatters){
+				if(is.Function(this._formatter_[formatters[i]])){
+					value = this._formatter_[formatters[i]](value);
+				}
+			}
+			return value;
+		},
+		_formatter_ : {
+			uppercase : function(value){
+				return (value+"").toUpperCase();
+			},
+			lowercase : function(value){
+				return (value+"").toLowerCase();
+			}
 		}
+	};
+	
+	tmpl.formatter = function(name,handler){
+		_tmpl._formatter_[name] = handler;
 	};
 
 	tmpl.parse = function(template,data){
@@ -90,6 +111,7 @@ _define_("jsutils.tmpl", function(tmpl) {
 				(settings.evaluate || noMatch).source ].join('|')
 				+ '|$', 'g');
 
+		text = text.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g,"{{_tmpl._format_( $1, '$2')}}");
 		// Compile the template source, escaping string literals appropriately.
 		var index = 0;
 		var source = "__p+='";
