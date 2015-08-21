@@ -5,6 +5,6 @@
 	"keywords": ["module", "polyfills"],
 	"license": "MIT",
 	"require": {
-		"webmodules/foo": ">=0.2.0"
+		"webmodules/foo": ">=3.0.0"
 	}
 }

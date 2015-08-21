@@ -10,7 +10,7 @@
     "url": "git://github.com/jsutils/tmpl.git"
   },
   "dependencies": {
-  	"webmodules-foo" : ">=0.2.0"
+  	"webmodules-foo" : ">=3.0.0"
   },
   "keywords": [
     "polyfils"
