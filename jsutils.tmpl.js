@@ -122,7 +122,7 @@ _define_("jsutils.tmpl", function(tmpl) {
             + '|$', 'g');
 
         text = text.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g, "{{_tmpl._format_( $1, '$2')}}");
-        text = text.replace(/\{\{\$(.+)[\(]+(.*)[\)]+\}\}/g, "{{_tmpl._function_('$1',[$2])}}");
+        text = text.replace(/\{\{\$([^\()}]*)\(([^}]*)(\))\}\}/g, "{{_tmpl._function_('$1',[$2])}}");
         // Compile the template source, escaping string literals appropriately.
         var index = 0;
         var source = "__p+='";
