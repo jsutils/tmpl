@@ -113,7 +113,7 @@ _define_("jsutils.tmpl", function(tmpl) {
     tmpl.compile = function(text, settings, oldSettings) {
         if (!settings && oldSettings)
             settings = oldSettings;
-        settings = mixin(mixin({}, settings), _tmpl.templateSettings);
+        settings = mixin(mixin({}, _tmpl.templateSettings), settings);
 
         // Combine delimiters into one regular expression via alternation.
         var matcher = RegExp([ (settings.escape || noMatch).source,
