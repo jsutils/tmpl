@@ -51,7 +51,7 @@ jsutils.tmpl.tags(function(tagName){
 });
 
 ```
-You can create your own derivatives
+You can create your own directives
 ```javascript
 
 jsutils.tmpl.tags(function(tagName){
