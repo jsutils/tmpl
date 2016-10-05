@@ -1,15 +1,18 @@
-(function(foo){
+(function(foo) {
     //Check Dependencies
     switch (undefined) {
         case foo._define_ :
+        case foo._module_ :
             throw "include webmodules-foo/define.js";
         case foo.when :
             console.warn("include webmodules-underscore/underscore.js");
-    };
+    }
+    ;
     return _define_;
 })(this)("jsutils.tmpl", function(tmpl) {
 
     "use strict";
+    var TAG_RESOLVERS = [], INTERCEPT_RESOLVERS = [];
 
     // List of HTML entities for escaping.
     var escapeMap = {
@@ -89,8 +92,8 @@
         },
         _function_: function(funName, args) {
             var formatters = funName.replace(/ /g, "").split("|");
-            var value = this._formatter_[formatters[0]].apply(this._formatter_,args);
-            for (var i=1;i<formatters.length;i++) {
+            var value = this._formatter_[formatters[0]].apply(this._formatter_, args);
+            for (var i = 1; i < formatters.length; i++) {
                 if (is.Function(this._formatter_[formatters[i]])) {
                     value = this._formatter_[formatters[i]](value);
                 }
@@ -104,14 +107,46 @@
             lowercase: function(value) {
                 return (value + "").toLowerCase();
             }
+        },
+        _tags_: function(tagString) {
+            var tags = tagString.replace(/\s+/g, " ").split(" ");
+            for (var i in TAG_RESOLVERS) {
+                tags = tags.filter(function(tagName) {
+                    return !TAG_RESOLVERS[i](tagName)
+                });
+            }
         }
     };
-
     tmpl.formatter = function(name, handler) {
         _tmpl._formatter_[name] = handler;
     };
 
-    tmpl.intercept = function(template, data) {
+    tmpl.tags = function(resolver) {
+        TAG_RESOLVERS.push(resolver);
+        return tmpl;
+    };
+    tmpl.tags(function(tagName) {
+        //override this funntion
+        //for ja-tags
+        if (tagName.indexOf("jq-") === 0) {
+            module(tagName.replace("jq-", "jqtags."));
+            return true;
+        }
+    });
+
+    tmpl.intercept = function(handler) {
+        INTERCEPT_RESOLVERS.push(handler);
+        return tmpl;
+    };
+
+    tmpl._intercept_ = function(template) {
+        for (var i in INTERCEPT_RESOLVERS) {
+            template = INTERCEPT_RESOLVERS[i](template);
+        }
+        return template;
+    };
+
+    tmpl.intercept(function(template) {
         template = template.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g, "{{_tmpl._format_( $1, '$2')}}");
         template = template.replace(/\{\{\$([^\()}]*)\(([^}]*)(\))\}\}/g, "{{_tmpl._function_('$1',[$2])}}");
         template = template.replace(/<_if\s(.*?)\s*>/g, "<!-- if($1){ -->");
@@ -126,8 +161,9 @@
         template = template.replace(/<_forEach\svar(.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($2,function(undefined,$1,$2){ -->");
         template = template.replace(/\<\/_forEach?>/g, "<!-- }) -->");
 
-        return template;
-    };
+        return template.replace(/\<_tags\s*(.*)?\/>/g, "<!-- _tmpl._tags_('$1'); -->");
+    });
+
 
     tmpl.parse = function(template, data) {
         return this.compile(template)(data);
@@ -149,7 +185,7 @@
             + '|$', 'g');
 
 
-        text = tmpl.intercept(text);
+        text = tmpl._intercept_(text);
         // Compile the template source, escaping string literals appropriately.
         var index = 0;
         var source = "__p+='";

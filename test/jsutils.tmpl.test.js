@@ -16,7 +16,7 @@ define({
                 fileUtils.load_template(self.path("test2.html")).done(function(conent){
                     //content is RAW HTML
                     self.$$.find("#source").text(conent);
-                    self.$$.find("#destination").text(tmpl.intercept(conent));
+                    self.$$.find("#destination").text(tmpl._intercept_(conent));
                     self.$$.find("#parsed").text(tmpl.compile(conent)({
                         a : "A", b : "B", value : 34
                     }));

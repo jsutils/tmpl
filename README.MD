@@ -30,3 +30,37 @@
 </_forEach>
 
 ```
+
+##_tags
+
+```html
+<_tags jq-label jq-switch/>
+
+```
+custom tags to be used in current template, can be configured by method `jsutils.tmpl.tags`
+
+```javascript
+
+jsutils.tmpl.tags(function(tagName){
+    if(tagName.indexOf("jq-")===0){
+        module(tag.replace("jq-","jqtags."));
+        return true;
+    } else {
+        return false;
+    }
+});
+
+```
+You can create your own derivatives
+```javascript
+
+jsutils.tmpl.tags(function(tagName){
+    if(tagName.indexOf("jq-")===0){
+        module(tag.replace("jq-","jqtags."));
+        return true;
+    } else {
+        return false;
+    }
+});
+
+```
