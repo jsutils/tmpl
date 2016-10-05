@@ -1,7 +1,11 @@
 {
-	"name" : "jsutils/tmpl",
-	"jsutils/tmpl": {
-		"js": ["jsutils.tmpl.js"],
-		"on" : ["webmodules/foo"]
-	}
+    "name": "jsutils/tmpl",
+    "jsutils/tmpl": {
+        "js": ["jsutils.tmpl.js"],
+        "on": ["webmodules/foo"]
+    },
+    "jsutils/tmpl/test": {
+        "js": ["test/jsutils.tmpl.test.js"],
+        "on": ["webmodules/foo","jsutils/tmpl","spamjs/view"]
+    }
 }

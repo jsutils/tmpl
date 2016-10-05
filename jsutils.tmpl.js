@@ -1,4 +1,13 @@
-_define_("jsutils.tmpl", function(tmpl) {
+(function(foo){
+    //Check Dependencies
+    switch (undefined) {
+        case foo._define_ :
+            throw "include webmodules-foo/define.js";
+        case foo.when :
+            console.warn("include webmodules-underscore/underscore.js");
+    };
+    return _define_;
+})(this)("jsutils.tmpl", function(tmpl) {
 
     "use strict";
 
@@ -102,6 +111,24 @@ _define_("jsutils.tmpl", function(tmpl) {
         _tmpl._formatter_[name] = handler;
     };
 
+    tmpl.intercept = function(template, data) {
+        template = template.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g, "{{_tmpl._format_( $1, '$2')}}");
+        template = template.replace(/\{\{\$([^\()}]*)\(([^}]*)(\))\}\}/g, "{{_tmpl._function_('$1',[$2])}}");
+        template = template.replace(/<_if\s(.*?)\s*>/g, "<!-- if($1){ -->");
+        template = template.replace(/<_elseif\s(.*?)\s*\/>/g, "<!-- } else if($1){ -->");
+        template = template.replace(/<_else\s*\/>/g, "<!-- } else { -->");
+        template = template.replace(/\<\/_if?>/g, "<!-- } -->");
+
+        template = template.replace(/<_for\s(.*?)\s*>/g, "<!-- for($1){ -->");
+        template = template.replace(/\<\/_for?>/g, "<!-- } -->");
+
+        template = template.replace(/<_forEach\svar\s*(.+)\s*[,\s](.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($3,function($2,$1,$3){ -->");
+        template = template.replace(/<_forEach\svar(.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($2,function(undefined,$1,$2){ -->");
+        template = template.replace(/\<\/_forEach?>/g, "<!-- }) -->");
+
+        return template;
+    };
+
     tmpl.parse = function(template, data) {
         return this.compile(template)(data);
     };
@@ -113,7 +140,7 @@ _define_("jsutils.tmpl", function(tmpl) {
     tmpl.compile = function(text, settings, oldSettings) {
         if (!settings && oldSettings)
             settings = oldSettings;
-        settings = mixin(mixin({}, settings), _tmpl.templateSettings);
+        settings = mixin(mixin({}, _tmpl.templateSettings), settings);
 
         // Combine delimiters into one regular expression via alternation.
         var matcher = RegExp([ (settings.escape || noMatch).source,
@@ -121,8 +148,8 @@ _define_("jsutils.tmpl", function(tmpl) {
             (settings.evaluate || noMatch).source ].join('|')
             + '|$', 'g');
 
-        text = text.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g, "{{_tmpl._format_( $1, '$2')}}");
-        text = text.replace(/\{\{\$([^\()}]*)\(([^}]*)(\))\}\}/g, "{{_tmpl._function_('$1',[$2])}}");
+
+        text = tmpl.intercept(text);
         // Compile the template source, escaping string literals appropriately.
         var index = 0;
         var source = "__p+='";
