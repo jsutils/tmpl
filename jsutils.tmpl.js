@@ -4,7 +4,7 @@
         case foo._define_ :
         case foo._module_ :
             throw "include webmodules-foo/define.js";
-        case foo.when :
+        case foo._ :
             console.warn("include webmodules-underscore/underscore.js");
     }
     ;
