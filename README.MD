@@ -2,9 +2,9 @@
 
 ##_if
 ```html
-<_if data.value==34>
+<_if exp="data.value==34">
     It is 34
-<_elseif data.value==40 />
+<_elseif exp="data.value==40" />
     it is 45
 <_else/>
     I dont know
@@ -15,7 +15,7 @@
 
 ```html
 
-<_for var i=0;i<10;i++>
+<_for exp="var i=0;i<10;i++">
     <span>for{{i}}</span>
 </_for>
 
@@ -27,6 +27,10 @@
 
 <_forEach var key value in data>
     <span>{{key}}=={{value}}</span>
+</_forEach>
+
+<_forEach var key in data>
+    <span>{{key}}=={{data[key]}}</span>
 </_forEach>
 
 ```

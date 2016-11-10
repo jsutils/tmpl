@@ -149,16 +149,26 @@
     tmpl.intercept(function(template) {
         template = template.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g, "{{_tmpl._format_( $1, '$2')}}");
         template = template.replace(/\{\{\$([^\()}]*)\(([^}]*)(\))\}\}/g, "{{_tmpl._function_('$1',[$2])}}");
+
+        template = template.replace(/<_if\sexp=\"(.*?)\"\s*>/g, "<!-- if($1){ -->");
         template = template.replace(/<_if\s(.*?)\s*>/g, "<!-- if($1){ -->");
+
+        template = template.replace(/<_elseif\exp=\"(.*?)\"\s*\/>/g, "<!-- } else if($1){ -->");
         template = template.replace(/<_elseif\s(.*?)\s*\/>/g, "<!-- } else if($1){ -->");
+
         template = template.replace(/<_else\s*\/>/g, "<!-- } else { -->");
         template = template.replace(/\<\/_if?>/g, "<!-- } -->");
 
+        template = template.replace(/<_for\sexp=\"(.*?)\"\s*>/g, "<!-- for($1){ -->");
         template = template.replace(/<_for\s(.*?)\s*>/g, "<!-- for($1){ -->");
         template = template.replace(/\<\/_for?>/g, "<!-- } -->");
 
+        template = template.replace(/<_forEach\sexp="var\s*(.+)\s*[,\s](.+)\sin\s(.+)\"\s*>/g, "<!-- _.forEach($3,function($2,$1,$3){ -->");
         template = template.replace(/<_forEach\svar\s*(.+)\s*[,\s](.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($3,function($2,$1,$3){ -->");
+
+        template = template.replace(/<_forEach\sexp=\"var(.+)\sin\s(.+)\"\s*>/g, "<!-- _.forEach($2,function(undefined,$1,$2){ -->");
         template = template.replace(/<_forEach\svar(.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($2,function(undefined,$1,$2){ -->");
+
         template = template.replace(/\<\/_forEach?>/g, "<!-- }) -->");
 
         return template.replace(/\<_tags\s*(.*)?\/>/g, "<!-- _tmpl._tags_('$1'); -->");
