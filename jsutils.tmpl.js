@@ -163,11 +163,11 @@
         template = template.replace(/<_for\s(.*?)\s*>/g, "<!-- for($1){ -->");
         template = template.replace(/\<\/_for?>/g, "<!-- } -->");
 
-        template = template.replace(/<_forEach\sexp="var\s*(.+)\s*[,\s](.+)\sin\s(.+)\"\s*>/g, "<!-- _.forEach($3,function($2,$1,$3){ -->");
-        template = template.replace(/<_forEach\svar\s*(.+)\s*[,\s](.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($3,function($2,$1,$3){ -->");
+        template = template.replace(/<_forEach\sexp=\"var\s*(.+)\s*[,\s](.+)\sin\s(.+)\"\s*>/g, "<!-- _.forEach($3,function($2,$1){ -->");
+        template = template.replace(/<_forEach\svar\s*(.+)\s*[,\s](.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($3,function($2,$1){ -->");
 
-        template = template.replace(/<_forEach\sexp=\"var(.+)\sin\s(.+)\"\s*>/g, "<!-- _.forEach($2,function(undefined,$1,$2){ -->");
-        template = template.replace(/<_forEach\svar(.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($2,function(undefined,$1,$2){ -->");
+        template = template.replace(/<_forEach\sexp=\"var\s(.+)\sin\s(.+)\"\s*>/g, "<!-- _.forEach($2,function(undefined,$1){ -->");
+        template = template.replace(/<_forEach\svar\s*(.+)\sin\s(.+)\s*>/g, "<!-- _.forEach($2,function(undefined,$1){ -->");
 
         template = template.replace(/\<\/_forEach?>/g, "<!-- }) -->");
 
