@@ -1,4 +1,4 @@
-(function(foo) {
+(function (foo) {
     //Check Dependencies
     switch (undefined) {
         case foo._define_ :
@@ -9,7 +9,7 @@
     }
     ;
     return _define_;
-})(this)("jsutils.tmpl", function(tmpl) {
+})(this)("jsutils.tmpl", function (tmpl) {
 
     "use strict";
     var TAG_RESOLVERS = [], INTERCEPT_RESOLVERS = [];
@@ -42,7 +42,7 @@
     };
 
     var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
-    var escapeChar = function(match) {
+    var escapeChar = function (match) {
         return '\\' + escapes[match];
     };
 
@@ -53,27 +53,27 @@
     var _tmpl = {
         // Functions for escaping and unescaping strings to/from HTML
         // interpolation.
-        escape: (function(map) {
-            var escaper = function(match) {
+        escape: (function (map) {
+            var escaper = function (match) {
                 return map[match];
             };
             // Regexes for identifying a key that needs to be escaped
             var source = '(?:' + Object.keys(map).join('|') + ')';
             var testRegexp = RegExp(source);
             var replaceRegexp = RegExp(source, 'g');
-            return function(string) {
+            return function (string) {
                 string = string == null ? '' : '' + string;
                 return testRegexp.test(string) ? string.replace(replaceRegexp,
-                    escaper) : string;
+                        escaper) : string;
             };
         })(escapeMap),
         templateSettings: {
             evaluate: /<!--\ ([\s\S]+?)\ -->/g,
-            interpolate: /{{([\s\S]+?)}}/g,
+            interpolate: /{{([\s\S]+?)}}/g, //interpolate: /{{([\s\S]+?)}}/g,
             escape: /<!--\\([\s\S]+?)-->/g,
             variable: 'data'
         },
-        __undescore_template_resolver_: function(file_name, data) {
+        __undescore_template_resolver_: function (file_name, data) {
             if (TEMPLATES[file_name]) {
                 return TEMPLATES[file_name](data);
             } else if (file_name) {
@@ -81,8 +81,9 @@
             } else
                 return "";
         },
-        _format_: function(value, str) {
+        _format_: function (value, str) {
             var formatters = str.replace(/ /g, "").split("|");
+            value = this._prefilter_(value);
             for (var i in formatters) {
                 if (is.Function(this._formatter_[formatters[i]])) {
                     value = this._formatter_[formatters[i]](value);
@@ -90,8 +91,9 @@
             }
             return value;
         },
-        _function_: function(funName, args) {
+        _function_: function (funName, args) {
             var formatters = funName.replace(/ /g, "").split("|");
+            args[0] = this._prefilter_(args[0]);
             var value = this._formatter_[formatters[0]].apply(this._formatter_, args);
             for (var i = 1; i < formatters.length; i++) {
                 if (is.Function(this._formatter_[formatters[i]])) {
@@ -100,32 +102,38 @@
             }
             return value;
         },
+        _prefilter_: function (str) {
+            if (str) {
+                return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+            return str;
+        },
         _formatter_: {
-            uppercase: function(value) {
+            uppercase: function (value) {
                 return (value + "").toUpperCase();
             },
-            lowercase: function(value) {
+            lowercase: function (value) {
                 return (value + "").toLowerCase();
             }
         },
-        _tags_: function(tagString) {
+        _tags_: function (tagString) {
             var tags = tagString.replace(/\s+/g, " ").split(" ");
             for (var i in TAG_RESOLVERS) {
-                tags = tags.filter(function(tagName) {
+                tags = tags.filter(function (tagName) {
                     return !TAG_RESOLVERS[i](tagName)
                 });
             }
         }
     };
-    tmpl.formatter = function(name, handler) {
+    tmpl.formatter = function (name, handler) {
         _tmpl._formatter_[name] = handler;
     };
 
-    tmpl.tags = function(resolver) {
+    tmpl.tags = function (resolver) {
         TAG_RESOLVERS.push(resolver);
         return tmpl;
     };
-    tmpl.tags(function(tagName) {
+    tmpl.tags(function (tagName) {
         //override this funntion
         //for ja-tags
         if (tagName.indexOf("jq-") === 0) {
@@ -134,19 +142,32 @@
         }
     });
 
-    tmpl.intercept = function(handler) {
+    tmpl.intercept = function (handler) {
         INTERCEPT_RESOLVERS.push(handler);
         return tmpl;
     };
+    tmpl.prefilter = function (_prefilter_) {
+        _tmpl._prefilter_ = _prefilter_;
+        return tmpl;
+    };
 
-    tmpl._intercept_ = function(template) {
+    tmpl._intercept_ = function (template) {
         for (var i in INTERCEPT_RESOLVERS) {
             template = INTERCEPT_RESOLVERS[i](template);
         }
         return template;
     };
 
-    tmpl.intercept(function(template) {
+    tmpl.intercept(function (template) {
+        template = template
+            .replace(/\{\{\#/g, "_tmpl_prefilter_hash_")
+            .replace(/\{\{\$/g, "_tmpl_prefilter_dollar_")
+            .replace(/\{\{/g, "{{_tmpl_prefilter_")
+            .replace(/_tmpl_prefilter_hash_/g, "{{#")
+            .replace(/_tmpl_prefilter_dollar_/g, "{{$")
+            .replace(/\{\{\_tmpl_prefilter_([^|}]*)([^}]*)\}\}/g, "{{_tmpl._prefilter_($1$2)}}");
+
+
         template = template.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g, "{{_tmpl._format_( $1, '$2')}}");
         template = template.replace(/\{\{\$([^\()}]*)\(([^}]*)(\))\}\}/g, "{{_tmpl._function_('$1',[$2])}}");
 
@@ -175,7 +196,7 @@
     });
 
 
-    tmpl.parse = function(template, data) {
+    tmpl.parse = function (template, data) {
         return this.compile(template)(data);
     };
 
@@ -183,15 +204,15 @@
     // Underscore templating handles arbitrary delimiters, preserves whitespace,
     // and correctly escapes quotes within interpolated code.
     // NB: `oldSettings` only exists for backwards compatibility.
-    tmpl.compile = function(text, settings, oldSettings) {
+    tmpl.compile = function (text, settings, oldSettings) {
         if (!settings && oldSettings)
             settings = oldSettings;
         settings = mixin(mixin({}, _tmpl.templateSettings), settings);
 
         // Combine delimiters into one regular expression via alternation.
-        var matcher = RegExp([ (settings.escape || noMatch).source,
-            (settings.interpolate || noMatch).source,
-            (settings.evaluate || noMatch).source ].join('|')
+        var matcher = RegExp([(settings.escape || noMatch).source,
+                (settings.interpolate || noMatch).source,
+                (settings.evaluate || noMatch).source].join('|')
             + '|$', 'g');
 
 
@@ -199,7 +220,7 @@
         // Compile the template source, escaping string literals appropriately.
         var index = 0;
         var source = "__p+='";
-        text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+        text.replace(matcher, function (match, escape, interpolate, evaluate, offset) {
             source += text.slice(index, offset).replace(escapeRegExp,
                 escapeChar);
             index = offset + match.length;
@@ -234,7 +255,7 @@
             throw e;
         }
 
-        var template = function(data) {
+        var template = function (data) {
             return render.call(this, data, _tmpl, settings);
         };
 
