@@ -1,6 +1,6 @@
-#jsutils.tmpl
+# jsutils.tmpl
 
-##_if
+## _if
 ```html
 <_if exp="data.value==34">
     It is 34
@@ -11,7 +11,7 @@
 </_if>
 ```
 
-##_for
+## _for
 
 ```html
 
@@ -21,7 +21,7 @@
 
 ```
 
-##_forEach
+## _forEach
 
 ```html
 
@@ -35,7 +35,7 @@
 
 ```
 
-##_tags
+## _tags
 
 ```html
 <_tags jq-label jq-switch/>
