@@ -103,9 +103,9 @@
             return value;
         },
         _prefilter_: function (str) {
-            if (is.String(str)) {
-                return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            }
+            // if (is.String(str)) {
+            //     return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // }
             return str;
         },
         _formatter_: {
