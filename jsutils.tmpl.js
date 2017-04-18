@@ -165,7 +165,8 @@
             .replace(/\{\{/g, "{{_tmpl_prefilter_")
             .replace(/_tmpl_prefilter_hash_/g, "{{#")
             .replace(/_tmpl_prefilter_dollar_/g, "{{$")
-            .replace(/\{\{\_tmpl_prefilter_([^|}]*)([^}]*)\}\}/g, "{{_tmpl._prefilter_($1$2)}}");
+            .replace(/\{\{\_tmpl_prefilter_([^|}]*)([^}]*)\}\}/g, "{{_tmpl._prefilter_($1$2)}}")
+            .replace(/\{\{\_tmpl_prefilter_/g, "{{");
 
 
         template = template.replace(/\{\{\#([^|}]*)([^}]*)\}\}/g, "{{_tmpl._format_( $1, '$2')}}");
